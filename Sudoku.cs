@@ -10,17 +10,13 @@ namespace SudokuSolver
     internal class Sudoku
     {
         private String[,] sudokuField = new String[9, 9];
-        private bool[,] sudokuHardField = new bool[9, 9];
         public bool slow { get; set; }
+
+        
         public Sudoku() 
         {
-            for (int i = 0; i < sudokuField.GetLength(0); i++)
-            {
-                for (int y = 0; y < sudokuField.GetLength(1); y++)
-                {
-                    sudokuField[i, y] = "x";
-                }
-            }
+            if(!MapLoad())
+                initTestLevel();            
         }
 
         public void printField()
@@ -50,8 +46,13 @@ namespace SudokuSolver
 
         public void initTestLevel()
         {
-            //sudokuField[0, 8] = "1";
-
+            for (int i = 0; i < sudokuField.GetLength(0); i++)
+            {
+                for (int y = 0; y < sudokuField.GetLength(1); y++)
+                {
+                    sudokuField[i, y] = "x";
+                }
+            }
             sudokuField[0, 0] = "5";
             sudokuField[0, 1] = "3";
             sudokuField[0, 4] = "7";
@@ -82,26 +83,9 @@ namespace SudokuSolver
             sudokuField[8, 4] = "8";
             sudokuField[8, 7] = "7";
             sudokuField[8, 8] = "9";
-            initCheckHardField();
         }
 
-        private void initCheckHardField()
-        {
-            for (int i = 0; i < sudokuField.GetLength(0); i++)
-            {
-                for (int y = 0; y < sudokuField.GetLength(1); y++)
-                {
-                    if (sudokuField[i, y] == "x")
-                    {
-                        sudokuHardField[i,y] = false;
-                    }
-                    else
-                    {
-                        sudokuHardField[i, y] = true;
-                    }
-                }
-            }
-        }
+        
         
         public bool trySolver()
         {
@@ -183,7 +167,40 @@ namespace SudokuSolver
                         return false;
                 }
             }
+            return true;
+        }
 
+        private bool MapLoad()
+        {
+            char[] validChars = { '1', '2', '3', '4', '5', '6', '7', '8', '9', 'x', ',' };
+            try
+            {
+                string contents = File.ReadAllText(@"Sudoku.txt").Replace(Environment.NewLine,",");
+
+                if (contents.Count(f => f == ',') != 80)
+                    throw new Exception("Sudoku.txt is not valid!\nCheck ','");
+                if(!contents.All(c => validChars.Contains(c)))
+                    throw new Exception("Sudoku.txt is not valid!\nCheck characters");
+
+                contents = contents.Replace(",", "");
+                int iCounter = 0;
+                for (int i = 0; i < sudokuField.GetLength(0); i++)
+                {
+                    for (int y = 0; y < sudokuField.GetLength(1); y++)
+                    {
+                        sudokuField[i, y] = contents[iCounter].ToString();
+                        iCounter++;
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR while try to loading map!!!");
+                Console.WriteLine("Message: " + ex.Message);
+                Console.ReadKey();
+                return false;
+            }
             return true;
         }
     }
